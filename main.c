@@ -67,7 +67,7 @@ struct player {
 };
 
 float delta_time = 0;
-
+float propel_time = 0;
 
 void draw_lines(float *angles, float *magnitudes, int point_count, float x, float y, float angle) {
     for (int i = 0; i < point_count; i ++) {
@@ -87,13 +87,11 @@ void draw_player(struct player *p) {
 
     draw_lines(player_angles, player_magnitudes, 4, p->x, p->y, p->angle);
 
-    if (controls[SDL_SCANCODE_UP]) {
-        float flame_size = 32 + 8 * cosf(30 * (float) SDL_GetTicks() / 1000);
+    float flame_size = propel_time * (32 + 8 * cosf(30 * (float) SDL_GetTicks() / 1000));
 
-        float fire_angles    [4] = {0, 0.75 * M_PI, M_PI      , -0.75 * M_PI};
-        float fire_magnitudes[4] = {0, 16         , flame_size, 16          };
-        draw_lines(fire_angles, fire_magnitudes, 4, p->x, p->y, p->angle);
-    }
+    float fire_angles    [4] = {0, 0.75 * M_PI, M_PI      , -0.75 * M_PI};
+    float fire_magnitudes[4] = {0, 16         , flame_size, 16          };
+    draw_lines(fire_angles, fire_magnitudes, 4, p->x, p->y, p->angle);
 }
 
 
@@ -112,7 +110,18 @@ void update_player(struct player *p) {
     if (controls[SDL_SCANCODE_UP]) {
         p->speed_x += propel_speed * cosf(p->angle) * delta_time;
         p->speed_y += propel_speed * sinf(p->angle) * delta_time;
+
+		propel_time += 2.5 * delta_time;
+		if (propel_time > 1) {
+			propel_time = 1;
+		}
+    } else {
+    	propel_time -= 2.5 * delta_time;
+    	if (propel_time < 0) {
+    		propel_time = 0;
+    	}
     }
+
 
     p->x += p->speed_x * delta_time;
     p->y += p->speed_y * delta_time;
@@ -226,6 +235,7 @@ int main(int argc, char **argv) {
 
             
         }
+
 
 
         // drawing
